@@ -8,10 +8,10 @@ ndm wraps npm, npx and node in `docker run` commands and mounts the current work
 directory. This way, commands like `npm install` can be executed without the constant risk of malware infection, since
 the docker container can only access the working directory and is deleted once the command finishes.
 
-**To be clear** this is a handy script, not an actively maintained project.
+**To be clear** at this time this is a handy script, not an actively maintained project.
 
 I recommend not having npm/node installed on any computer and to work exclusively in docker containers, such as dev containers.
-This script is convenient for running commands like `npm install` from the command line without risking malware infection.
+This script is convenient for running commands like `npm install` or `npm start` from the command line without risking malware infection.
 
 ## Setup
 
@@ -57,7 +57,8 @@ Once the steps in **Setup** have been followed, the following commands are avail
 ## Limitations
 * Commands cannot traverse up the directory tree. This is relevant for `ngit`, which needs to be executed in the directory
   that has the `.git` folder in it.
-* Files outside the working directory are not kept inbetween commands, so external dependencies like Ruby or `apt` packages
+* Files outside the working directory are not kept inbetween commands, so external dependencies like e.g. Ruby or `apt` packages
   are not kept. In that case, you could add them to the Dockerfile in `$HOME/.ndm/Dockerfile` or create your own
   docker image and tag it with `custom_node:<Your version name>`
+* The node process naturally still has network access
 * `ndm` has not been tested on macOS as I do not have a Mac
