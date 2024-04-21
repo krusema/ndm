@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+### GET DIRECTORY OF THIS SCRIPT FIRST
+SOURCE=${BASH_SOURCE[0]}
+while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+  SOURCE=$(readlink "$SOURCE")
+  [[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+SOURCE_DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+
+
+if [ "$1" == "install" ]
+then
+  if [ "$2" == "" ]
+  then
+    echo 'Usage: ndm install <version>'
+    exit 1
+  fi
+
+  cd $SOURCE_DIR
+  docker build -t custom_node:$2 -f Dockerfile --build-arg="NODE_VERSION=$2" .
+
+  echo
+  echo Node version $2 is now available for use with ndm
+  echo To use it, enter the command
+  echo ndm use $2
+
+  exit 0
+fi
+
+if [ "$1" == "use" ]
+then
+  if [ "$2" == "" ]
+    then
+      echo 'Usage: ndm use <version>'
+      exit 1
+    fi
+
+    docker tag custom_node:$2 custom_node:active
+
+    exit 0
+fi
+
+
+echo "Unknown subcommand '$1', use 'install' or 'use'"
+

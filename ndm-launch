@@ -1,0 +1,58 @@
+#!/bin/bash
+set -e
+
+ALIAS_USED=`basename $0`
+
+COMMAND=''
+
+ADDITIONAL_MOUNT=''
+
+if [[ "$ALIAS_USED" == "npm" ]]
+then
+  COMMAND=npm
+elif [[ "$ALIAS_USED" == "node" ]]
+then
+  COMMAND=node
+elif [[ "$ALIAS_USED" == "npx" ]]
+then
+  COMMAND=npx
+elif [[ "$ALIAS_USED" == "ngit" ]]
+then
+  COMMAND=git
+  ADDITIONAL_MOUNT="-v $HOME/.ssh:/home/node/.ssh:ro -v $HOME/.gitconfig:/home/node/.gitconfig:ro"
+elif [[ "$ALIAS_USED" == "node-bash" ]]
+then
+  COMMAND=bash
+else
+  echo "This script needs to be called with a valid command like npm or node with a symlink"
+  exit 1
+fi
+
+CONTAINER_NAME=node_`uuid`
+
+MOUNT_DIR=$PWD
+
+if [[ ! "$MOUNT_DIR" =~ ^$HOME/.+ ]]
+then
+  MOUNT_DIR="/tmp/$CONTAINER_NAME"
+  echo "ndm will only mount dirs in subdirectory of home directory for safety reasons. Mounting to $MOUNT_DIR instead"
+fi
+
+
+REPL_MOUNT=''
+
+if [[ "$HOME" != "" ]]
+then
+  REPL_MOUNT="-v $HOME/.node_repl_history:/home/node/.node_repl_history"
+fi
+
+docker run --rm -it \
+ $ADDITIONAL_MOUNT \
+ $REPL_MOUNT \
+ -v $MOUNT_DIR:/home/node/wdir \
+ -w /home/node/wdir \
+ --user node \
+ --network host \
+ --init \
+  custom_node:active $COMMAND $@
+
